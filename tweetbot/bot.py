@@ -1,3 +1,5 @@
+from os import path
+
 import tweepy
 
 
@@ -21,9 +23,8 @@ class TweetBot:
         self.api = tweepy.API(auth)
 
         user = self.api.me()
-        print(user)
         self.screen_name = user.screen_name
-        print(self.screen_name)
+        print(f'Connected to {self.screen_name}')
 
     @staticmethod
     def read_key_from_file(input_file):
@@ -32,4 +33,8 @@ class TweetBot:
 
     def post_photo(self, tweet_text, **kwargs):
         from .camera import take_photo
-        self.api.update_with_media(take_photo(), status=tweet_text, **kwargs)
+
+        photo_path = take_photo(path.join(self.screen_name, 'Photos'))
+
+        self.api.update_with_media(photo_path, status=tweet_text, **kwargs)
+        print(f'Photo at {photo_path} posted to {self.screen_name}')
