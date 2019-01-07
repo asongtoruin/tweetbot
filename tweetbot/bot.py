@@ -24,7 +24,7 @@ class TweetBot:
 
         user = self.api.me()
         self.screen_name = user.screen_name
-        print(f'Connected to {self.screen_name}')
+        print('Connected to ' + self.screen_name)
 
     @staticmethod
     def read_key_from_file(input_file):
@@ -37,4 +37,8 @@ class TweetBot:
         photo_path = take_photo(path.join(self.screen_name, 'Photos'))
 
         self.api.update_with_media(photo_path, status=tweet_text, **kwargs)
-        print(f'Photo at {photo_path} posted to {self.screen_name}')
+        print(
+            'Photo at {photo_path} posted to {screen_name}'.format(
+                photo_path=photo_path, screen_name=self.screen_name
+            )
+        )
