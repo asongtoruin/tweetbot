@@ -40,6 +40,8 @@ class EasyCamera:
         self.camera.stop_recording()
         self.camera.stop_preview()
 
+        return out
+
 
 if __name__ == '__main__':
     cam = EasyCamera()
