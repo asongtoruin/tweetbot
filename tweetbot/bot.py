@@ -32,13 +32,27 @@ class TweetBot:
             return f.read()
 
     def post_photo(self, tweet_text, **kwargs):
-        from .camera import take_photo
+        from .camera import EasyCamera
 
-        photo_path = take_photo(path.join(self.screen_name, 'Photos'))
+        ec = EasyCamera()
+        photo_path = ec.take_photo(path.join(self.screen_name, 'Photos'))
 
         self.api.update_with_media(photo_path, status=tweet_text, **kwargs)
         print(
             'Photo at {photo_path} posted to {screen_name}'.format(
                 photo_path=photo_path, screen_name=self.screen_name
+            )
+        )
+
+    def post_video(self, tweet_text, **kwargs):
+        from .camera import EasyCamera
+
+        ec = EasyCamera()
+        video_path = ec.record_video(path.join(self.screen_name, 'Videos'))
+
+        self.api.update_with_media(video_path, status=tweet_text, **kwargs)
+        print(
+            'Video at {video_path} posted to {screen_name}'.format(
+                video_path=video_path, screen_name=self.screen_name
             )
         )

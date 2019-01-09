@@ -6,28 +6,42 @@ from time import sleep
 import picamera as pc
 
 
-def take_photo(dest_folder='Photos'):
-    # TODO Add docstring
-    if not isdir(dest_folder):
-        makedirs(dest_folder)
+class EasyCamera:
+    def __init__(self):
+        self.camera = pc.PiCamera(resolution=(1200, 800))
+        self.camera.annotate_background = pc.Color('black')
+        self.camera.annotate_text = datetime.now().strftime('%Y-%m-%d %H:%M')
 
-    camera = pc.PiCamera(resolution=(1024, 768))
+    @staticmethod
+    def output_location(folder_name, file_ext):
+        if not isdir(folder_name):
+            makedirs(folder_name)
 
-    camera.annotate_background = pc.Color('black')
-    camera.annotate_text = datetime.now().strftime('%Y-%m-%d %H:%M')
+        return join(
+            folder_name, datetime.now().strftime('%Y-%m-%d %H%M') + file_ext
+        )
 
-    camera.start_preview()
-    sleep(5)
+    def take_photo(self, dest_folder='Photos'):
+        # TODO Add docstring
+        out = self.output_location(dest_folder, '.png')
 
-    output_location = join(
-        dest_folder, datetime.now().strftime('%Y-%m-%d %H%M') + '.png'
-    )
+        self.camera.start_preview()
+        sleep(5)
+        self.camera.capture(out)
+        self.camera.stop_preview()
 
-    camera.capture(output_location)
-    camera.stop_preview()
+        return out
 
-    return output_location
+    def record_video(self, dest_folder='Videos', duration_secs=10):
+        out = self.output_location(dest_folder, '.h264')
+        self.camera.start_preview()
+        self.camera.start_recording(out)
+        sleep(duration_secs)
+        self.camera.stop_recording()
+        self.camera.stop_preview()
 
 
 if __name__ == '__main__':
-    take_photo()
+    cam = EasyCamera()
+    cam.take_photo()
+    cam.record_video()
