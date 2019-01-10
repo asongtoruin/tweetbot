@@ -1,6 +1,6 @@
 from os import path
 
-import tweepy
+from twython import Twython
 
 
 class TweetBot:
@@ -17,13 +17,10 @@ class TweetBot:
             consumer_keys = map(self.read_key_from_file, consumer_keys)
             access_keys = map(self.read_key_from_file, access_keys)
 
-        auth = tweepy.OAuthHandler(*consumer_keys)
-        auth.set_access_token(*access_keys)
+        self.api = Twython(*consumer_keys, *access_keys)
 
-        self.api = tweepy.API(auth)
-
-        user = self.api.me()
-        self.screen_name = user.screen_name
+        user = self.api.verify_credentials()
+        self.screen_name = user['screen_name']
         print('Connected to ' + self.screen_name)
 
     @staticmethod
@@ -37,7 +34,12 @@ class TweetBot:
         ec = EasyCamera()
         photo_path = ec.take_photo(path.join(self.screen_name, 'Photos'))
 
-        self.api.update_with_media(photo_path, status=tweet_text, **kwargs)
+        with open(photo_path, 'rb') as photo:
+            upload = self.api.upload_media(media=photo)
+
+        self.api.update_status(
+            status=tweet_text, media_ids=[upload['media_id']], **kwargs
+        )
         print(
             'Photo at {photo_path} posted to {screen_name}'.format(
                 photo_path=photo_path, screen_name=self.screen_name
@@ -50,7 +52,13 @@ class TweetBot:
         ec = EasyCamera()
         video_path = ec.record_video(path.join(self.screen_name, 'Videos'))
 
-        self.api.update_with_media(video_path, status=tweet_text, **kwargs)
+        with open(video_path, 'rb') as video:
+            upload = self.api.upload_media(media=video, media_type='video/mp4')
+
+        self.api.update_status(
+            status=tweet_text, media_ids=[upload['media_id']], **kwargs
+        )
+
         print(
             'Video at {video_path} posted to {screen_name}'.format(
                 video_path=video_path, screen_name=self.screen_name
