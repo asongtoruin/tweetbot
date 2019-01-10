@@ -14,10 +14,10 @@ class TweetBot:
         access_keys = (access_token, access_token_secret)
 
         if key_source == 'files':
-            consumer_keys = map(self.read_key_from_file, consumer_keys)
-            access_keys = map(self.read_key_from_file, access_keys)
+            consumer_keys = list(map(self.read_key_from_file, consumer_keys))
+            access_keys = list(map(self.read_key_from_file, access_keys))
 
-        self.api = Twython(*consumer_keys, *access_keys)
+        self.api = Twython(*(consumer_keys + access_keys))
 
         user = self.api.verify_credentials()
         self.screen_name = user['screen_name']
