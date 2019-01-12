@@ -9,5 +9,5 @@ setup(
     description='Basic tweetbot nonsense',
     author='Adam Ruszkowski',
     packages=find_packages(),
-    install_requires=['twython']
+    install_requires=['twython>=3.6.0']
 )
