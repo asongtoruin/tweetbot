@@ -56,7 +56,7 @@ class TweetBot:
 
         with open(video_path, 'rb') as video:
             upload = self.api.upload_video(
-                media=video, media_type='video/mp4', check_status=True
+                media=video, media_type='video/mp4', check_progress=True
             )
 
         self.api.update_status(
