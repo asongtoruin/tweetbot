@@ -5,9 +5,9 @@ from setuptools import setup, find_packages
 
 setup(
     name='tweetbot',
-    version='0.0.1',
+    version='0.0.2',
     description='Basic tweetbot nonsense',
     author='Adam Ruszkowski',
     packages=find_packages(),
-    install_requires=['tweepy']
+    install_requires=['twython>=3.6.0']
 )
