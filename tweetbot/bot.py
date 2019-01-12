@@ -46,11 +46,13 @@ class TweetBot:
             )
         )
 
-    def post_video(self, tweet_text, **kwargs):
+    def post_video(self, tweet_text, duration_secs=10, **kwargs):
         from .camera import EasyCamera
 
         ec = EasyCamera()
-        video_path = ec.record_video(path.join(self.screen_name, 'Videos'))
+        video_path = ec.record_video(
+            path.join(self.screen_name, 'Videos'), duration_secs=duration_secs
+        )
 
         with open(video_path, 'rb') as video:
             upload = self.api.upload_media(media=video, media_type='video/mp4')
