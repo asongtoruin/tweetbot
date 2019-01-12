@@ -1,5 +1,5 @@
 from datetime import datetime
-from os import makedirs
+from os import makedirs, remove
 from os.path import isdir, join
 from time import sleep
 
@@ -33,14 +33,28 @@ class EasyCamera:
         return out
 
     def record_video(self, dest_folder='Videos', duration_secs=10):
+        import subprocess
+
         out = self.output_location(dest_folder, '.h264')
+        mp4_out = out.replace('.h264', '.mp4')
         self.camera.start_preview()
         self.camera.start_recording(out)
         sleep(duration_secs)
         self.camera.stop_recording()
         self.camera.stop_preview()
 
-        return out
+        # Use gpac to convert from .h264 to .mp4
+        # install with
+        process = subprocess.Popen(
+            ['MP4Box', '-add', out, mp4_out], stdout=subprocess.PIPE
+        )
+
+        stdout = process.communicate()
+
+        print(stdout)
+        remove(out)
+
+        return mp4_out
 
 
 if __name__ == '__main__':
