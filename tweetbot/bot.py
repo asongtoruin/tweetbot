@@ -68,3 +68,13 @@ class TweetBot:
                 video_path=video_path, screen_name=self.screen_name
             )
         )
+
+    def full_user_timeline(self, **kwargs):
+        if 'user_id' not in kwargs and 'screen_name' not in kwargs:
+            raise ValueError(
+                'get_full_timeline requires either a screen_name or user_id '
+                'to search for'
+            )
+
+        for page in self.api.cursor(self.api.get_user_timeline, **kwargs):
+            yield page
