@@ -2,6 +2,8 @@ from os import path
 
 from twython import Twython
 
+from .helpers import read_key_from_file
+
 
 class TweetBot:
     def __init__(self, key_source='values',
@@ -14,19 +16,14 @@ class TweetBot:
         access_keys = (access_token, access_token_secret)
 
         if key_source == 'files':
-            consumer_keys = list(map(self.read_key_from_file, consumer_keys))
-            access_keys = list(map(self.read_key_from_file, access_keys))
+            consumer_keys = list(map(read_key_from_file, consumer_keys))
+            access_keys = list(map(read_key_from_file, access_keys))
 
         self.api = Twython(*(consumer_keys + access_keys))
 
         user = self.api.verify_credentials()
         self.screen_name = user['screen_name']
         print('Connected to ' + self.screen_name)
-
-    @staticmethod
-    def read_key_from_file(input_file):
-        with open(input_file, 'r') as f:
-            return f.read()
 
     def post_photo(self, tweet_text, **kwargs):
         from .camera import EasyCamera
@@ -78,3 +75,4 @@ class TweetBot:
 
         for page in self.api.cursor(self.api.get_user_timeline, **kwargs):
             yield page
+
