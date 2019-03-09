@@ -47,7 +47,10 @@ class TweetDatabase:
                     created_at text,
                     screen_name text,
                     retweet bool,
+                    quote_status bool,
                     tweet_text text,
+                    mentions text,
+                    hashtags text,
                     language text
                 );'''
         )
@@ -56,14 +59,20 @@ class TweetDatabase:
         print('Adding tweets to database')
         prepared_tweets = [
             (t['id'], t['created_at'], t['user']['screen_name'],
-             'retweeted_status' in t, t['text'], t['lang'])
+             'retweeted_status' in t, t['is_quote_status'],
+             t['text'],
+             ','.join(u['screen_name'] for u in t['entities']['user_mentions']),
+             ','.join(h['text'] for h in t['entities']['hashtags']),
+             t['lang'])
             for t in tweets
         ]
         self.cursor.executemany(
             '''INSERT INTO tweets(
                     id, created_at, screen_name,
-                    retweet, tweet_text, language
-                ) VALUES (?, ?, ?, ?, ?, ?);''',
+                    retweet, quote_status, tweet_text, 
+                    mentions, hashtags,
+                    language
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);''',
             prepared_tweets
         )
 
