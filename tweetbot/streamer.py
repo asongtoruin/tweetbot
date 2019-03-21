@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from collections import deque
+from datetime import datetime
 from pprint import pprint
 import sqlite3
 
@@ -10,10 +12,9 @@ from .helpers import read_key_from_file
 
 
 class Streamer(TwythonStreamer):
-    def __init__(self, database_name, key_source='values',
+    def __init__(self, queue, key_source='values',
                  consumer_key=None, consumer_secret=None,
-                 access_token=None, access_token_secret=None,
-                 batch_size=100):
+                 access_token=None, access_token_secret=None):
         if key_source == 'values':
             super().__init__(
                 consumer_key, consumer_secret, access_token, access_token_secret
@@ -22,16 +23,11 @@ class Streamer(TwythonStreamer):
             super().__init__(
                 *[read_key_from_file(f) for f in (consumer_key, consumer_secret, access_token, access_token_secret)]
             )
-        self.batch_size = batch_size
-        self.current_tweets = []
-        self.db = TweetDatabase(db_name=database_name)
+        self.queue = queue
 
     def on_success(self, data):
         if 'text' in data:
-            self.current_tweets.append(data)
-            if len(self.current_tweets) >= self.batch_size:
-                self.db.add_tweets(self.current_tweets)
-                self.current_tweets = []
+            self.queue.append(data)
         else:
             print(data)
 
@@ -40,6 +36,7 @@ class TweetDatabase:
     def __init__(self, db_name, columns_to_store=None, **kwargs):
         self.conn = sqlite3.connect(db_name)
         self.cursor = self.conn.cursor()
+        self.queue = deque()
 
         self.cursor.execute(
             '''CREATE TABLE IF NOT EXISTS tweets (
@@ -77,3 +74,11 @@ class TweetDatabase:
         )
 
         self.conn.commit()
+
+    def monitor_queue(self, append_size=100):
+        while True:
+            if len(self.queue) >= append_size:
+                tweets = [self.queue.popleft() for _ in range(append_size)]
+                print(datetime.now(), 'Adding tweets')
+                self.add_tweets(tweets)
+                print('Remaining tweets:', len(self.queue))
