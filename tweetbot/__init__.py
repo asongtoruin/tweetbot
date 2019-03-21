@@ -1,2 +1,2 @@
 from tweetbot.bot import TweetBot
-from tweetbot.streamer import Streamer
+from tweetbot.streamer import Streamer, TweetDatabase
