@@ -25,23 +25,24 @@ class TweetBot:
         self.screen_name = user['screen_name']
         print('Connected to ' + self.screen_name)
 
-    def post_photo(self, tweet_text, **kwargs):
-        from .camera import EasyCamera
+    def post_photo(self, tweet_text, from_camera=False, media=None, 
+                   many=False, **kwargs):
+        if from_camera:
+            from .camera import EasyCamera
 
-        ec = EasyCamera()
-        photo_path = ec.take_photo(path.join(self.screen_name, 'Photos'))
+            ec = EasyCamera()
+            photo_path = ec.take_photo(path.join(self.screen_name, 'Photos'))
 
-        with open(photo_path, 'rb') as photo:
-            upload = self.api.upload_media(media=photo)
+            ids = [self.upload_media(photo_path, many=True)]
+        else:
+            ids = self.upload_media(media, many=many)
 
-        self.api.update_status(
-            status=tweet_text, media_ids=[upload['media_id']], **kwargs
+        tweet = self.api.update_status(
+            status=tweet_text, media_ids=ids, **kwargs
         )
-        print(
-            'Photo at {photo_path} posted to {screen_name}'.format(
-                photo_path=photo_path, screen_name=self.screen_name
-            )
-        )
+        print('Posted to {screen_name}'.format(screen_name=self.screen_name))
+
+        return tweet
 
     def post_video(self, tweet_text, duration_secs=10, **kwargs):
         from .camera import EasyCamera
@@ -65,6 +66,19 @@ class TweetBot:
                 video_path=video_path, screen_name=self.screen_name
             )
         )
+
+    def upload_media(self, media, many=True, **kwargs):
+        if not many:
+            media = [media]
+        
+        ids = []
+
+        for m in media:
+            with open(m, 'rb') as fp:
+                resp = self.api.upload_media(media=fp, **kwargs)
+                ids.append(resp['media_id'])
+
+        return ids
 
     def full_user_timeline(self, **kwargs):
         if 'user_id' not in kwargs and 'screen_name' not in kwargs:
